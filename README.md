@@ -308,54 +308,6 @@ After completing all phases, verify:
 
 ---
 
-## Troubleshooting
-
-### "Python not found"
-- Ensure Python is installed and added to PATH
-- Try `python3` instead of `python` on Mac/Linux
-- Restart terminal after installing Python
-
-### "pip not recognized"
-- Use `python -m pip` instead of just `pip`
-- Example: `python -m pip install -r requirements.txt`
-
-### "MySQL connection error"
-- Verify MySQL server is running
-- Check username/password in `load_to_mysql.py` and `dashboard.py`
-- Ensure database `fda_shortage_db` exists (run 01_create_tables.sql first)
-
-### "File not found" error
-- Make sure you're in the project root directory
-- Run scripts in sequential order (don't skip steps)
-- Check that data files exist in `data/` folder
-
-### "streamlit not recognized"
-- Use `python -m streamlit` instead of just `streamlit`
-- Example: `python -m streamlit run scripts/dashboard.py`
-
-### "No module named 'plotly'"
-- Run: `python -m pip install plotly`
-- Or: `python -m pip install -r requirements.txt`
-
-### MySQL Workbench result tabs
-- Click through "Result 1", "Result 2", etc. tabs to see query outputs
-- Results don't display automatically like Jupyter notebooks
-
-### "Data too long for column" errors
-- This is fixed in the current version
-- Tables use TEXT data type for variable-length fields
-- If you see this error, ensure you're using the latest 01_create_tables.sql
-
-### "Duplicate entry" errors during data load
-- This is fixed in process_data.py with deduplication
-- If you see this error, ensure you're using the latest process_data.py
-
-### Foreign key constraint errors
-- Ensure tables are loaded in correct order (run load_to_mysql.py as-is)
-- Script uses `if_exists='append'` to avoid these issues
-
----
-
 ## Data Sources
 
 - **FDA NDC Database:** https://open.fda.gov/apis/drug/ndc/
@@ -387,16 +339,6 @@ These insights are **only possible** because we joined shortage data with the ND
 
 ## Technical Implementation Notes
 
-### Bug Fixes & Solutions
-This pipeline incorporates several important fixes discovered during development:
-
-1. **FDA API Endpoints:** Uses correct plural form "shortages" not "shortage"
-2. **Data Deduplication:** FDA datasets contain duplicates; removed via pandas drop_duplicates()
-3. **Schema Design:** TEXT data types for variable-length fields (brand_name, therapeutic_category, dosage_form)
-4. **Index Optimization:** Prefix lengths on TEXT column indexes to comply with MySQL requirements
-5. **Foreign Key Handling:** Uses `if_exists='append'` to avoid constraint violations during loading
-6. **Field Mapping:** Correctly maps FDA "presentation" field to dosage_form in shortage data
-
 ### Design Decisions
 - **CSV intermediate files:** Easier to inspect and debug than direct JSON→MySQL
 - **Separate processing script:** Allows re-processing without re-downloading
@@ -406,41 +348,9 @@ This pipeline incorporates several important fixes discovered during development
 
 ---
 
-## Project Status
-
-- [x] Phase 1-2: Data acquisition and processing
-- [x] Phase 3-4: Database creation and data loading
-- [x] Phase 5-6: SQL transformations and analysis
-- [x] Phase 7: Interactive dashboard
-- [ ] Phase 8-9: Documentation and diagrams
-- [ ] Phase 10: Final deliverables (video, design doc)
-
----
-
-## Contributing
-
-All team members should:
-1. Pull latest changes: `git pull origin main`
-2. Make changes in your area
-3. Test changes locally
-4. Commit with clear messages: `git commit -m "Description"`
-5. Push to GitHub: `git push origin main`
-
----
-
 ## License
 
 Educational project for ADS-507 at University of San Diego
-
----
-
-## Support
-
-If you encounter issues:
-1. Check the Troubleshooting section above
-2. Verify you followed all steps in order
-3. Check that all prerequisites are installed
-4. Ensure you're using the latest versions of all scripts
 
 ---
 
