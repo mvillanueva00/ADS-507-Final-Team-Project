@@ -24,6 +24,8 @@ This project builds a MySQL-based data pipeline that combines two FDA datasets (
 ## Repository Structure
 ```
 ADS-507-Final-Team-Project/
+├── .github/workflows/         # CI/CD automation (optional)
+│   └── ci.yml                 # Automated dependency validation
 ├── data/                      # Local data storage (not committed to GitHub)
 │   └── DATA_SOURCE.md         # Data source documentation
 ├── docs/                      # Documentation and diagrams
@@ -38,6 +40,7 @@ ADS-507-Final-Team-Project/
 │   └── 03_analysis_queries.sql# Analytical queries
 ├── .gitignore                 # Prevents committing large files
 ├── requirements.txt           # Python dependencies
+├── run_pipeline.py            # Convenience script (optional)
 └── README.md                  # This file
 ```
 
@@ -96,6 +99,44 @@ This installs: pandas, requests, mysql-connector-python, sqlalchemy, streamlit, 
 
 ---
 
+## Pipeline Execution Options
+
+**You have TWO ways to run the pipeline:**
+
+### **Option A: Automated (Convenience Script)** ⚡
+
+**Step 1: Create database tables FIRST** (one-time setup)
+1. Open MySQL Workbench
+2. Run `sql/01_create_tables.sql` (Phase 3 from manual instructions below)
+
+**Step 2: Run automated Python pipeline:**
+```bash
+python run_pipeline.py
+```
+This automates Phases 1, 2, and 4 (download → process → load)
+
+**Step 3: Complete SQL analysis manually:**
+- Run `sql/02_transformations.sql` in MySQL Workbench (Phase 5)
+- Run `sql/03_analysis_queries.sql` in MySQL Workbench (Phase 6)
+
+**Step 4: Launch dashboard:**
+```bash
+python -m streamlit run scripts/dashboard.py
+```
+
+---
+
+### **Option B: Manual (Step-by-Step)** 📖
+Follow all phases 1-7 below for full control and inspection at each step.
+
+---
+
+**Recommendation:** Use Option B (manual) for first-time setup to understand each phase. Use Option A for subsequent runs or re-execution.
+
+**Note:** The automated script will check that you've created tables and prompt you if you haven't.
+
+---
+
 ## Pipeline Execution (Sequential Order)
 
 ### **Phase 1: Download Raw Data**
@@ -113,8 +154,6 @@ python scripts/download_data.py
 - `data/drug-shortages-0001-of-0001.json` (1,838 shortage records)
 
 **Time:** 2-5 minutes (depending on internet speed)
-
-**Note:** Script automatically handles correct FDA API endpoints (uses plural "shortages" not "shortage")
 
 ---
 
@@ -155,10 +194,10 @@ Then:
 **What it does:**
 - Creates database: `fda_shortage_db`
 - Creates 4 tables with proper structure and indexes:
-  - `raw_ndc` (product information)
-  - `raw_ndc_packaging` (packaging details)
-  - `raw_drug_shortages` (shortage data)
-  - `shortage_contacts` (contact information)
+  + `raw_ndc` (product information)
+  + `raw_ndc_packaging` (packaging details)
+  + `raw_drug_shortages` (shortage data)
+  + `shortage_contacts` (contact information)
 
 **Expected output:**
 - Database and empty tables created
@@ -166,11 +205,6 @@ Then:
 - Success message displayed
 
 **Time:** < 1 minute
-
-**Technical Notes:**
-- Uses TEXT data type for fields with variable-length content (brand_name, labeler_name, therapeutic_category, dosage_form)
-- Indexes on TEXT columns use prefix lengths (e.g., `brand_name(255)`)
-- Foreign key constraints ensure referential integrity
 
 ---
 
@@ -205,8 +239,6 @@ shortage_contacts: 1810 rows
 
 **Time:** 1-3 minutes
 
-**Technical Note:** Script uses `append` mode instead of `replace` to avoid foreign key constraint violations during loading.
-
 ---
 
 ### **Phase 5: Run SQL Transformations**
@@ -226,11 +258,11 @@ Open **MySQL Workbench** and run:
 **Expected output:**
 - Table `shortages_with_ndc` created with ~1,810 rows
 - Match rate: ~90% (shortages successfully matched with NDC data)
-- 4 views created: 
-  - `current_package_shortages`
-  - `multi_package_shortages`
-  - `manufacturer_risk_analysis`
-  - `current_manufacturer_risk`
+- 4 views created:
+  + `current_package_shortages`
+  + `multi_package_shortages`
+  + `manufacturer_risk_analysis`
+  + `current_manufacturer_risk`
 
 **Time:** < 1 minute
 
@@ -259,13 +291,11 @@ Open **MySQL Workbench** and run:
 
 **Time:** < 1 minute
 
-**Tip:** MySQL Workbench displays results in tabs. Click each "Result" tab to view different query outputs (unlike Jupyter notebooks which display inline).
-
 ---
 
 ### **Phase 7: Run Interactive Dashboard**
 
-**IMPORTANT:** Update database password in `scripts/dashboard.py` (line ~30)
+**IMPORTANT:** Update database password in `scripts/dashboard.py`
 
 Then run:
 ```bash
@@ -308,6 +338,24 @@ After completing all phases, verify:
 
 ---
 
+## Continuous Integration (Optional)
+
+This repository includes automated testing via GitHub Actions:
+
+**What it does:**
+- Automatically tests dependency installation on every push
+- Validates that `requirements.txt` is working correctly
+- Runs basic import checks for key packages
+
+**View test results:**
+1. Go to the repository on GitHub
+2. Click the **"Actions"** tab
+3. See green checkmark ✅ (passing) or red X ❌ (failing)
+
+**Note:** This is supplemental validation. The primary workflow is the manual README-driven process described above, as it allows inspection of data at each step and demonstrates understanding of the pipeline.
+
+---
+
 ## Data Sources
 
 - **FDA NDC Database:** https://open.fda.gov/apis/drug/ndc/
@@ -334,17 +382,6 @@ See `data/DATA_SOURCE.md` for detailed documentation.
 - Manufacturer portfolio risk analysis
 
 These insights are **only possible** because we joined shortage data with the NDC product database.
-
----
-
-## Technical Implementation Notes
-
-### Design Decisions
-- **CSV intermediate files:** Easier to inspect and debug than direct JSON→MySQL
-- **Separate processing script:** Allows re-processing without re-downloading
-- **Views instead of tables:** Analysis views are regenerated from source data
-- **Streamlit over Power BI:** Better reproducibility, cross-platform, code-based
-- **ROW_NUMBER() for IDs:** Generates shortage_id values without AUTO_INCREMENT issues
 
 ---
 
