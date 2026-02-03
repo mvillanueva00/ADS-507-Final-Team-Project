@@ -123,7 +123,11 @@ This automates Phases 1, 2, and 4 (download → process → load)
 ```bash
 python -m streamlit run scripts/dashboard.py
 ```
-
+**Note:** If dashboard fails with "No module named 'plotly'", install it:
+```bash
+python -m pip install plotly
+```
+Then launch the dashboard again.
 ---
 
 ### **Option B: Manual (Step-by-Step)** 📖
@@ -319,8 +323,10 @@ python -m streamlit run scripts/dashboard.py
 
 **Time:** Dashboard loads in 5-10 seconds
 
-**Technical Note:** If you get "streamlit not recognized", use `python -m streamlit` instead of just `streamlit`
-
+**Troubleshooting:**
+- If you get "streamlit not recognized", use `python -m streamlit run scripts/dashboard.py` instead
+- If you get "No module named 'plotly'" error, first run: `python -m pip install plotly`, then launch the dashboard again.
+  
 ---
 
 ## Verification Checklist
