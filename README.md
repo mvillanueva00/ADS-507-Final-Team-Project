@@ -127,7 +127,8 @@ python -m streamlit run scripts/dashboard.py
 ```bash
 python -m pip install plotly
 ```
-Then launch the dashboard again.
+**Then launch the dashboard again.**
+
 ---
 
 ### **Option B: Manual (Step-by-Step)** 📖
